@@ -6,26 +6,56 @@ import (
 	"github.com/rivo/tview"
 )
 
+const (
+	PageMenu    string = "menu"
+	PageConnect string = "connect"
+	PageAddress string = "address"
+	PageChat    string = "chat"
+)
+
 var (
 	App               *tview.Application
 	Messages          *tview.TextView
 	InputField        *tview.InputField
 	AddrList          *tview.List
 	ConnectInputField *tview.InputField
+	MenuList          *tview.List
 	ChatLayout        *tview.Flex
 	MenuLayout        *tview.Flex
+	Pages             *tview.Pages
 )
 
 func InitializeUI() {
 	App = tview.NewApplication()
 
+	App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEsc:
+			App.Stop()
+		case tcell.KeyCtrlC:
+			App.Stop()
+		case tcell.KeyBackspace:
+			page, _ := Pages.GetFrontPage()
+			if page != PageMenu {
+				Pages.SwitchToPage(PageMenu)
+			}
+		}
+
+		// Or check for rune keys
+		if event.Rune() == 'h' || event.Rune() == 'H' {
+			// println("You pressed H!")
+		}
+
+		return event // return nil to swallow the key
+	})
+
 	// Menu
-	menuList := tview.NewList().
+	MenuList = tview.NewList().
 		AddItem("Connect", "Type other peer's address to connect", 's', func() {
-			App.SetRoot(ConnectInputField, true)
+			Pages.SwitchToPage(PageConnect)
 		}).
 		AddItem("Addresses", "View your addresses", 'a', func() {
-			App.SetRoot(AddrList, true)
+			Pages.SwitchToPage(PageAddress)
 		}).
 		AddItem("Quit", "Exit the program", 'q', func() {
 			App.Stop()
@@ -33,7 +63,7 @@ func InitializeUI() {
 
 	MenuLayout = tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(menuList, 0, 1, true)
+		AddItem(MenuList, 0, 1, true)
 
 	// Connect Screen
 	ConnectInputField = tview.NewInputField().
@@ -46,7 +76,7 @@ func InitializeUI() {
 	// Addresses List
 	AddrList = tview.NewList().
 		AddItem("Back", "", 0, func() {
-			App.SetRoot(MenuLayout, true)
+			Pages.SwitchToPage(PageMenu)
 		})
 
 	// Chat
@@ -68,16 +98,23 @@ func InitializeUI() {
 		SetDirection(tview.FlexRow).
 		AddItem(Messages, 0, 1, false).
 		AddItem(InputField, 1, 1, true)
+
+	// Page
+	Pages = tview.NewPages()
+	Pages.AddPage(PageMenu, MenuLayout, true, true)
+	Pages.AddPage(PageConnect, ConnectInputField, true, false)
+	Pages.AddPage(PageAddress, AddrList, true, false)
+	Pages.AddPage(PageChat, ChatLayout, true, false)
 }
 
 func StartUI() {
-	if err := App.SetRoot(MenuLayout, true).Run(); err != nil {
+	if err := App.SetRoot(Pages, true).Run(); err != nil {
 		panic(err)
 	}
 }
 
-func SwitchPage(page tview.Primitive) {
-	App.SetRoot(page, true)
+func SwitchPage(name string) {
+	Pages.SwitchToPage(name)
 }
 
 func NewMultiAddress(text string) {

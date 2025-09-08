@@ -46,12 +46,18 @@ func main() {
 		}
 		s.Write([]byte(node.Addrs()[0].String() + "/p2p/" + node.ID().String()))
 
-		ui.SwitchPage(ui.ChatLayout)
+		ui.SwitchPage(ui.PageChat)
+		ui.MenuList.InsertItem(0, "Chat", "Open the chat window", 'c', func() {
+			ui.SwitchPage(ui.PageChat)
+		})
 	})
 
 	node.SetStreamHandler("/connection/1.0.0", func(s network.Stream) {
 		peerinfo = p2p.HandleConnectionStream(s, node, ctx)
-		ui.SwitchPage(ui.ChatLayout)
+		ui.SwitchPage(ui.PageChat)
+		ui.MenuList.InsertItem(0, "Chat", "Open the chat window", 'c', func() {
+			ui.SwitchPage(ui.PageChat)
+		})
 	})
 
 	node.SetStreamHandler("/chat/1.0.0", func(s network.Stream) {
