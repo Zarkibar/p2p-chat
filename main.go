@@ -4,14 +4,9 @@ import (
 	"context"
 
 	"github.com/gdamore/tcell/v2"
-
-	// "github.com/rivo/tview"
-	// "github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	peerstore "github.com/libp2p/go-libp2p/core/peer"
-
-	// "github.com/multiformats/go-multiaddr"
 
 	"p2p-net/internal/p2p"
 	"p2p-net/internal/ui"
@@ -35,13 +30,14 @@ func main() {
 	defer node.Close()
 
 	ui.InitializeUI()
-	ui.InputDoneCallback(setInputCommands)
+	ui.InputField.SetDoneFunc(setInputCommands)
 
-	ui.AddSystemMessage("Addresses:")
+	// ui.AddSystemMessage("Addresses:")
 	for i := 0; i < len(node.Addrs()); i++ {
-		ui.AddSystemMessage(node.Addrs()[i].String() + "/p2p/" + node.ID().String())
+		// ui.AddSystemMessage(node.Addrs()[i].String() + "/p2p/" + node.ID().String())
+		ui.NewMultiAddress(node.Addrs()[i].String() + "/p2p/" + node.ID().String())
 	}
-	ui.AddSystemMessage("")
+	// ui.AddSystemMessage("")
 
 	node.SetStreamHandler("/chat/1.0.0", func(s network.Stream) {
 		p2p.HandleStream(s, func(msg string) { ui.AddMessage(msg, userColor) })
