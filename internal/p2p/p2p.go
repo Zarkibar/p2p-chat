@@ -22,6 +22,17 @@ func CreateNode() host.Host {
 
 }
 
+func HandleConnectionStream(s network.Stream, node host.Host, ctx context.Context) *peerstore.AddrInfo {
+	defer s.Close()
+
+	buff := make([]byte, 1024)
+	n, _ := s.Read(buff)
+	addr := string(buff[:n])
+
+	peerinfo := ConnectToPeer(node, ctx, addr)
+	return peerinfo
+}
+
 func HandleChatStream(s network.Stream, callback func(string)) {
 	defer s.Close()
 
