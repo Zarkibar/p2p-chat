@@ -22,7 +22,7 @@ func CreateNode() host.Host {
 
 }
 
-func HandleStream(s network.Stream, callback func(string)) {
+func HandleChatStream(s network.Stream, callback func(string)) {
 	defer s.Close()
 
 	buff := make([]byte, 1024)

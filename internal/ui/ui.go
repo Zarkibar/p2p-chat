@@ -76,6 +76,10 @@ func StartUI() {
 	}
 }
 
+func SwitchPage(page tview.Primitive) {
+	App.SetRoot(page, true)
+}
+
 func NewMultiAddress(text string) {
 	AddrList.AddItem(text, "", 0, func() {
 		if err := clipboard.WriteAll(text); err != nil {

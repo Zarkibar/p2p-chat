@@ -39,8 +39,31 @@ func main() {
 	}
 	// ui.AddSystemMessage("")
 
+	ui.ConnectInputField.SetDoneFunc(func(key tcell.Key) {
+		peerinfo = p2p.ConnectToPeer(node, ctx, ui.ConnectInputField.GetText())
+
+		s, err := node.NewStream(ctx, peerinfo.ID, "/connection/1.0.0")
+		if err != nil {
+			panic(err)
+		}
+		s.Write([]byte(node.Addrs()[0].String() + "/p2p/" + node.ID().String()))
+
+		ui.SwitchPage(ui.ChatLayout)
+	})
+
+	node.SetStreamHandler("/connection/1.0.0", func(s network.Stream) {
+		defer s.Close()
+
+		buff := make([]byte, 1024)
+		n, _ := s.Read(buff)
+		addr := string(buff[:n])
+
+		peerinfo = p2p.ConnectToPeer(node, ctx, addr)
+		ui.SwitchPage(ui.ChatLayout)
+	})
+
 	node.SetStreamHandler("/chat/1.0.0", func(s network.Stream) {
-		p2p.HandleStream(s, func(msg string) { ui.AddMessage(msg, userColor) })
+		p2p.HandleChatStream(s, func(msg string) { ui.AddMessage(msg, userColor) })
 	})
 
 	ui.StartUI()
@@ -48,11 +71,11 @@ func main() {
 
 func setInputCommands(key tcell.Key) {
 	if ui.InputField.GetText()[0] == '/' {
-		if ui.InputField.GetText()[1:4] == "ip4" {
-			peerinfo = p2p.ConnectToPeer(node, ctx, ui.InputField.GetText())
-		} else {
-			username = ui.InputField.GetText()[1:]
-		}
+		// if ui.InputField.GetText()[1:4] == "ip4" {
+		// 	peerinfo = p2p.ConnectToPeer(node, ctx, ui.InputField.GetText())
+		// } else {
+		username = ui.InputField.GetText()[1:]
+		//}
 	} else {
 		msg := username + ": " + ui.InputField.GetText()
 		ack := p2p.SendMsg(node, ctx, peerinfo, msg)
