@@ -30,11 +30,9 @@ func InitializeUI() {
 
 	App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
-		case tcell.KeyEsc:
-			App.Stop()
 		case tcell.KeyCtrlC:
 			App.Stop()
-		case tcell.KeyBackspace:
+		case tcell.KeyEsc:
 			page, _ := Pages.GetFrontPage()
 			if page != PageMenu {
 				Pages.SwitchToPage(PageMenu)
@@ -130,11 +128,6 @@ func AddSystemMessage(msg string) {
 	Messages.Write([]byte("[yellow:b]" + msg + "\n"))
 }
 
-func AddMessage(msg string, color ...string) {
-	c := "green"
-	if len(color) > 0 && color[0] != "" {
-		c = color[0]
-	}
-
-	Messages.Write([]byte("[" + c + "::b]" + msg + "\n"))
+func AddMessage(msg string) {
+	Messages.Write([]byte(msg + "\n"))
 }

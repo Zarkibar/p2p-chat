@@ -61,19 +61,23 @@ func main() {
 	})
 
 	node.SetStreamHandler("/chat/1.0.0", func(s network.Stream) {
-		p2p.HandleChatStream(s, func(msg string) { ui.AddMessage(msg, userColor) })
+		p2p.HandleChatStream(s, func(msg string) { ui.AddMessage(msg) })
 	})
 
 	ui.StartUI()
 }
 
 func setInputCommands(key tcell.Key) {
-	if ui.InputField.GetText()[0] == '/' {
-		if ui.InputField.GetText()[1:10] == "username " {
-			username = ui.InputField.GetText()[10:]
+	userInput := ui.InputField.GetText()
+
+	if userInput[0] == '/' {
+		if userInput[1:10] == "username " {
+			username = userInput[10:]
+		} else if userInput[1:7] == "color " {
+			userColor = userInput[7:]
 		}
 	} else {
-		msg := username + ": " + ui.InputField.GetText()
+		msg := "[" + userColor + "::b]" + username + ": " + userInput
 		ack := p2p.SendMsg(node, ctx, peerinfo, msg)
 		if ack == "ack" {
 			ui.AddMessage(msg)
